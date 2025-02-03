@@ -34,3 +34,5 @@ vendor/
 .gonb_cache
 
 version.txt
+version/versionhash.go
+version/versiontag.go
