@@ -33,50 +33,50 @@ const (
 // preferred. Otherwise the hardcoded version is used and augmented with commit information from the build metadata.
 //
 // Source: https://github.com/Icinga/icingadb/blob/51068fff46364385f3c0165aab7b7393fa6a303b/pkg/version/version.go
-func AppVersion(version, gitVersion, gitHash string) *VersionInfo {
-	if !strings.HasPrefix(gitVersion, "$") && !strings.HasPrefix(gitHash, "$") {
+func AppVersion(version, defaultCommit, gitArchiveVersion, gitArchiveHash string) *VersionInfo {
+	if !strings.HasPrefix(gitArchiveVersion, "$") && !strings.HasPrefix(gitArchiveHash, "$") {
+		// Read from `git archive`
 		versionInfo := &VersionInfo{
-			Version:     gitVersion,
-			Commit:      gitHash,
-			ReleaseLink: fmt.Sprintf("%s/release/%s", BaseVersionControlURL, gitVersion),
+			Version:     gitArchiveVersion,
+			Commit:      gitArchiveHash,
+			ReleaseLink: fmt.Sprintf("%s/release/%s", BaseVersionControlURL, gitArchiveVersion),
 		}
-		if len(gitHash) > 0 {
-			versionInfo.CommitLink = fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, gitHash)
+		if len(gitArchiveHash) > 0 {
+			versionInfo.CommitLink = fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, gitArchiveHash)
 		}
 
 		return versionInfo
-	} else {
+	} else if info, ok := debug.ReadBuildInfo(); ok {
+		// Read from go debug build info
 		var commit string
 		var releaseVersion string
 
-		if info, ok := debug.ReadBuildInfo(); ok {
-			modified := false
+		modified := false
 
-			for _, setting := range info.Settings {
-				switch setting.Key {
-				case "vcs.revision":
-					commit = setting.Value
-				case "vcs.modified":
-					modified, _ = strconv.ParseBool(setting.Value)
-				}
-				if strings.Contains(setting.Key, "ldflags") &&
-					strings.Contains(setting.Value, "git.tag") {
-
-					start := strings.Index(setting.Value, "git.tag=") + 8
-					end := strings.Index(setting.Value[start:], "'") + start
-					version = setting.Value[start:end]
-				}
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				commit = setting.Value
+			case "vcs.modified":
+				modified, _ = strconv.ParseBool(setting.Value)
 			}
+			if strings.Contains(setting.Key, "ldflags") &&
+				strings.Contains(setting.Value, "git.tag") {
 
-			// Same truncation length for the commit hash
-			const hashLen = 7
-			releaseVersion = version
+				start := strings.Index(setting.Value, "git.tag=") + 8
+				end := strings.Index(setting.Value[start:], "'") + start
+				version = setting.Value[start:end]
+			}
+		}
 
-			if len(commit) >= hashLen {
-				if modified {
-					version += "-dirty"
-					commit += " (modified)"
-				}
+		// Same truncation length for the commit hash
+		const hashLen = 7
+		releaseVersion = version
+
+		if len(commit) >= hashLen {
+			if modified {
+				version += "-dirty"
+				commit += " (modified)"
 			}
 		}
 
@@ -89,6 +89,14 @@ func AppVersion(version, gitVersion, gitHash string) *VersionInfo {
 			versionInfo.CommitLink = fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, commit)
 		}
 
+		return versionInfo
+	} else {
+		versionInfo := &VersionInfo{
+			Version:     version,
+			Commit:      defaultCommit,
+			ReleaseLink: fmt.Sprintf("%s/release/%s", BaseVersionControlURL, version),
+			CommitLink:  fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, defaultCommit),
+		}
 		return versionInfo
 	}
 }
