@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/janpfeifer/gonb/internal/dispatcher"
-	"github.com/janpfeifer/gonb/internal/goexec"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/janpfeifer/gonb/internal/dispatcher"
+	"github.com/janpfeifer/gonb/internal/goexec"
 
 	"github.com/gofrs/uuid"
 	"github.com/janpfeifer/gonb/internal/kernel"
@@ -78,7 +79,6 @@ func main() {
 	_, _ = fmt.Fprintf(os.Stderr, "Use either --install to install the kernel, or if started by Jupyter the flag --kernel must be provided.\n")
 	flag.PrintDefaults()
 	os.Exit(1)
-	return
 }
 
 // install GoNB kernel as a JupyterServer configuration.

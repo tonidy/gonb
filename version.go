@@ -7,8 +7,9 @@ import (
 	"github.com/janpfeifer/gonb/version"
 )
 
+//go:generate bash -c "sh version.sh version | tr -d '\n' > version.txt"
 //go:generate bash -c "printf 'package version\nvar GitTag = \"%s\"\n' \"$(cat version.txt)\" > version/versiontag.go"
-//go:generate bash -c "printf 'package version\nvar GitCommitHash = \"%s\"\n' \"$(git rev-parse HEAD)\" > version/versionhash.go"
+//go:generate bash -c "printf 'package version\nvar GitCommitHash = \"%s\"\n' \"$(sh version.sh hash)\" > version/versionhash.go"
 
 func must(err error) {
 	if err != nil {

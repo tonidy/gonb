@@ -27,10 +27,10 @@ const (
 // It's supposed to be called like this in combination with setting the `export-subst` attribute for the corresponding
 // file in .gitattributes:
 //
-//	var AppVersion = version.AppVersion("1.0.0-rc1", "$Format:%(describe)$", "$Format:%H$")
+//	var AppVersion = version.AppVersion("1.0.0-rc1", "51068fff46364385f3c0165aab7b7393fa6a303b")
 //
-// When exported using `git archive`, the placeholders are replaced in the file and this version information is
-// preferred. Otherwise the hardcoded version is used and augmented with commit information from the build metadata.
+// When exported using `git archive`, we'll generate using `version.sh` and update the version information.
+// Otherwise the hardcoded version is used and augmented with commit information from the build metadata.
 //
 // Source: https://github.com/Icinga/icingadb/blob/51068fff46364385f3c0165aab7b7393fa6a303b/pkg/version/version.go
 func AppVersion(version, commit string) *VersionInfo {

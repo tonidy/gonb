@@ -32,3 +32,5 @@ vendor/
 
 # gonb/cache package cache directories, generated during testing.
 .gonb_cache
+
+version.txt
