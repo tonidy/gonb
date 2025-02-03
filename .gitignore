@@ -33,6 +33,4 @@ vendor/
 # gonb/cache package cache directories, generated during testing.
 .gonb_cache
 
-version.txt
-version/versionhash.go
-version/versiontag.go
+version/*.txt
