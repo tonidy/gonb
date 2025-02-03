@@ -33,22 +33,10 @@ const (
 // preferred. Otherwise the hardcoded version is used and augmented with commit information from the build metadata.
 //
 // Source: https://github.com/Icinga/icingadb/blob/51068fff46364385f3c0165aab7b7393fa6a303b/pkg/version/version.go
-func AppVersion(version, defaultCommit, gitArchiveVersion, gitArchiveHash string) *VersionInfo {
-	if !strings.HasPrefix(gitArchiveVersion, "$") && !strings.HasPrefix(gitArchiveHash, "$") {
-		// Read from `git archive`
-		versionInfo := &VersionInfo{
-			Version:     gitArchiveVersion,
-			Commit:      gitArchiveHash,
-			ReleaseLink: fmt.Sprintf("%s/release/%s", BaseVersionControlURL, gitArchiveVersion),
-		}
-		if len(gitArchiveHash) > 0 {
-			versionInfo.CommitLink = fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, gitArchiveHash)
-		}
-
-		return versionInfo
-	} else if info, ok := debug.ReadBuildInfo(); ok {
-		// Read from go debug build info
-		var commit string
+func AppVersion(version, commit string) *VersionInfo {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		// Read from go debug build info inside git repo
+		var gitCommit string
 		var releaseVersion string
 
 		modified := false
@@ -56,7 +44,7 @@ func AppVersion(version, defaultCommit, gitArchiveVersion, gitArchiveHash string
 		for _, setting := range info.Settings {
 			switch setting.Key {
 			case "vcs.revision":
-				commit = setting.Value
+				gitCommit = setting.Value
 			case "vcs.modified":
 				modified, _ = strconv.ParseBool(setting.Value)
 			}
@@ -73,31 +61,35 @@ func AppVersion(version, defaultCommit, gitArchiveVersion, gitArchiveHash string
 		const hashLen = 7
 		releaseVersion = version
 
-		if len(commit) >= hashLen {
+		if len(gitCommit) >= hashLen {
 			if modified {
 				version += "-dirty"
-				commit += " (modified)"
+				gitCommit += " (modified)"
 			}
+		}
+
+		if gitCommit == "" {
+			gitCommit = commit
 		}
 
 		versionInfo := &VersionInfo{
 			Version:     version,
-			Commit:      commit,
+			Commit:      gitCommit,
 			ReleaseLink: fmt.Sprintf("%s/release/%s", BaseVersionControlURL, releaseVersion),
 		}
-		if len(commit) > 0 {
-			versionInfo.CommitLink = fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, commit)
+		if len(gitCommit) > 0 {
+			versionInfo.CommitLink = fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, gitCommit)
 		}
 
 		return versionInfo
 	} else {
-		versionInfo := &VersionInfo{
+		// Non git repo
+		return &VersionInfo{
 			Version:     version,
-			Commit:      defaultCommit,
+			Commit:      commit,
 			ReleaseLink: fmt.Sprintf("%s/release/%s", BaseVersionControlURL, version),
-			CommitLink:  fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, defaultCommit),
+			CommitLink:  fmt.Sprintf("%s/tree/%s", BaseVersionControlURL, commit),
 		}
-		return versionInfo
 	}
 }
 

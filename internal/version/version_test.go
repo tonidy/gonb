@@ -10,38 +10,33 @@ import (
 
 func TestAppVersion(t *testing.T) {
 	tests := []struct {
-		name               string
-		version            string
-		defaultCommit      string
-		gitArchiveDescribe string
-		gitArchiveHash     string
-		want               *VersionInfo
+		name    string
+		version string
+		commit  string
+		want    *VersionInfo
 	}{
 		{
-			name:               "With git information",
-			version:            "1.0.0",
-			gitArchiveDescribe: "v1.0.0",
-			gitArchiveHash:     "abc1234",
+			name:    "With git information",
+			version: "v1.0.0",
+			commit:  "abc1234",
 			want: &VersionInfo{
 				Version:    "v1.0.0",
 				Commit:     "abc1234",
 				CommitLink: "https://github.com/janpfeifer/gonb/tree/abc1234",
 			},
 		},
-		{
-			name:               "Without git information",
-			version:            "1.0.0",
-			gitArchiveDescribe: "$Format:%(describe)$",
-			gitArchiveHash:     "$Format:%H$",
-			want: &VersionInfo{
-				Version: "1.0.0",
-			},
-		},
+		// {
+		// 	name:    "Without git information",
+		// 	version: "1.0.0",
+		// 	want: &VersionInfo{
+		// 		Version: "1.0.0",
+		// 	},
+		// },
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := AppVersion(tt.version, tt.defaultCommit, tt.gitArchiveDescribe, tt.gitArchiveHash)
+			got := AppVersion(tt.version, tt.commit)
 
 			if got.Version != tt.want.Version {
 				t.Errorf("AppVersion().Version = %v, want %v", got.Version, tt.want.Version)

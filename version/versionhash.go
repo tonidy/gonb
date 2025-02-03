@@ -1,2 +1,2 @@
 package version
-var GitCommitHash = "60ff94b91e0125e8dce3e83e08ada48effdfd8a0"
+var GitCommitHash = "9a23a56533f39bbf761a52e15f0e5feb0b180485"
